@@ -1,5 +1,6 @@
 import db from '@renderer/databases'
 import { useAssistant } from '@renderer/hooks/useAssistant'
+import { useSettings } from '@renderer/hooks/useSettings'
 import { getTopic, TopicManager } from '@renderer/hooks/useTopic'
 import { fetchChatCompletion, fetchMessagesSummary } from '@renderer/services/api'
 import { getDefaultTopic } from '@renderer/services/assistant'
@@ -28,6 +29,12 @@ const Messages: FC<Props> = ({ assistant, topic, setActiveTopic }) => {
   const [lastMessage, setLastMessage] = useState<Message | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const { updateTopic, addTopic } = useAssistant(assistant.id)
+  const { showTopics, topicPosition } = useSettings()
+
+  const maxWidth =
+    showTopics && topicPosition === 'right'
+      ? 'calc(100vw - var(--sidebar-width) - var(--assistants-width) - var(--assistants-width))'
+      : 'calc(100vw - var(--sidebar-width) - var(--assistants-width))'
 
   const onSendMessage = useCallback(
     async (message: Message) => {
@@ -204,7 +211,7 @@ const Messages: FC<Props> = ({ assistant, topic, setActiveTopic }) => {
   }, [assistant, messages])
 
   return (
-    <Container id="messages" key={assistant.id} ref={containerRef}>
+    <Container id="messages" style={{ maxWidth }} key={assistant.id} ref={containerRef}>
       <Suggestions assistant={assistant} messages={messages} lastMessage={lastMessage} />
       {lastMessage && <MessageItem key={lastMessage.id} message={lastMessage} lastMessage />}
       {reverse([...messages]).map((message, index) => (
@@ -231,6 +238,7 @@ const Container = styled.div`
   padding: 10px 0;
   background-color: var(--color-background);
   padding-bottom: 20px;
+  overflow-x: hidden;
 `
 
 export default Messages
